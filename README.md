@@ -1,26 +1,30 @@
 # Presence — Daily Check-in (iPhone-ready web app)
 
 ## Included
-- One prompt per page, clean white UI
-- Daily ratings for presence, dissociation, stress
-- Sleep, caffeine, social interaction, movement, emotional state and notes
-- Local browser storage
-- History list with edit/delete
-- Trend graph (last 14 entries) and contextual averages
-- CSV export and JSON backup/restore
-- Installable PWA + offline cache
+- One prompt per screen, clean white, phone-friendly interface
+- **Core ratings:** presence, dissociation/detachment, memory/recall, focus, mental clarity, stress, emotional state
+- **Context:** sleep, caffeine, environment, social interaction quality, connection, meaningful conversations, relationship tone, other influences
+- **Behaviors:** hygiene/personal maintenance, physical activity, time outside, water intake, food intake, meal regularity, nutrition quality, whether you ate enough, general self-care
+- Daily entries saved locally on this device, with history, edit/delete, trend summaries, CSV export, and JSON backup/restore
+- Installable PWA with offline cache
 
-## Install on iPhone (recommended: GitHub Pages)
-1. Create a GitHub account if you don't already have one.
-2. Create a new repository (e.g. `presence-checkin`), preferably public for free Pages hosting.
-3. Upload all files in this folder to the repository root.
-4. In the repository: **Settings → Pages → Build and deployment → Deploy from a branch**.
-5. Choose `main` branch and `/ (root)`, then Save.
-6. Wait for GitHub Pages to provide your website URL.
-7. Open that URL in **Safari on your iPhone**.
-8. Tap Share → **Add to Home Screen** → Add.
+## Update an existing GitHub Pages repository
+1. Download/extract this folder.
+2. In your `presence-checkin` GitHub repository, open the existing app files.
+3. Upload and replace the six files in the repository root: `index.html`, `manifest.json`, `sw.js`, `icon-192.png`, `icon-512.png`, and `README.md`.
+4. Commit the changes to the `main` branch. GitHub Pages will redeploy automatically.
+5. On your iPhone, open the site in Safari and refresh. If the old version remains, fully close and reopen the Home Screen app; the service-worker cache version has been updated.
 
-Once installed, launch from the Home Screen. Entries are stored in local browser storage on that device. Export JSON backups periodically; clearing Safari website data can erase entries.
+## Existing entries and data safety
+This version deliberately keeps the original local-storage key, `presence_checkins_v1`, and preserves existing field names. Your old entries should remain readable and the new fields will be added as you complete them. The app stores data in the browser on your device; it does not upload your check-ins. **Before updating, export a JSON backup from History** as a precaution.
 
-## Note
-This is a private, local-first wellness journal—not a diagnostic or emergency tool. The website itself is static and does not transmit check-in data.
+## 9 PM reminder on iPhone
+GitHub Pages is static hosting, so the website cannot independently schedule reliable background push notifications. Keep or create your existing 9:00 PM iPhone Shortcuts automation with a **Show Notification** action as the reminder, then open Presence from your Home Screen to complete the check-in. The reminder is an iOS Shortcut, not a push notification sent by this website.
+
+## Install on iPhone (if needed)
+1. Open the GitHub Pages URL in Safari.
+2. Tap Share → **Add to Home Screen** → Add.
+3. Launch Presence from the Home Screen.
+
+## Privacy note
+This is a local-first personal journal, not a diagnostic or emergency tool. Entries remain in this browser's local storage. Clearing website data or deleting the app can erase them, so export JSON backups periodically.

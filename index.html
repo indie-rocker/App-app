@@ -137,89 +137,84 @@ const KEY='presence_checkins_v1';
 const todayISO=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
 const load=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch{return {}}};
 const saveAll=data=>localStorage.setItem(KEY,JSON.stringify(data));
-let entries=load(), date=todayISO(), step=0, draft={date};
+let entries=load(),date=todayISO(),step=0,draft={date};
 const questions=[
- {key:'date',title:'Which day are you checking in for?',desc:'Log today or a previous day.',type:'date'},
- {key:'presence',title:'How present did you feel today?',desc:'How connected did you feel to the moment, your surroundings, and what you were doing?',type:'rating',low:'Not present',mid:'Moderate',high:'Fully present'},
- {key:'dissociation',title:'How dissociative did you feel?',desc:'Disconnected, unreal, foggy, numb, or like you were watching your life happen.',type:'rating',low:'None',mid:'Moderate',high:'Intense'},
- {key:'sleepHours',title:'How much did you sleep?',desc:'Approximate hours of sleep last night.',type:'number',placeholder:'Hours slept'},
- {key:'sleepQuality',title:'How was your sleep quality?',desc:'How rested did you feel?',type:'choice',choices:['Poor','Okay','Good','Excellent']},
- {key:'stress',title:'How stressed did you feel?',desc:'Mental pressure, anxiety, overwhelm, or tension.',type:'rating',low:'None',mid:'Moderate',high:'Extreme'},
- {key:'caffeine',title:'How much caffeine did you have?',desc:'Include coffee, tea, energy drinks, and approximate timing.',type:'text',placeholder:'e.g. 2 coffees, last one at 2 PM'},
- {key:'social',title:'How much social interaction did you have?',desc:'Think about meaningful interaction, not just being around people.',type:'choice',choices:['None','Minimal','Some','Meaningful','A lot']},
- {key:'activity',title:'How physically active were you?',desc:'Walking, running, cycling, gym, stretching, etc.',type:'choice',choices:['None','Light','Moderate','Intense']},
- {key:'emotion',title:'What was your emotional state?',desc:'A few words are enough. No need to overthink it.',type:'text',placeholder:'e.g. Calm, anxious, flat, curious, content…'},
- {key:'trigger',title:'What may have influenced your day?',desc:'Routine changes, environment, illness, medication, something that helped, or something you noticed.',type:'textarea',placeholder:'Anything that seemed to affect your presence…'},
- {key:'notes',title:'Anything else worth noting?',desc:'Optional thoughts, observations, or context.',type:'textarea',placeholder:'Additional notes…'}
+ {section:'Start',key:'date',title:'Which day are you checking in for?',desc:'Log today or a previous day.',type:'date'},
+ {section:'Core ratings',key:'presence',title:'How present did you feel today?',desc:'How connected did you feel to the moment, your surroundings, and what you were doing?',type:'rating',low:'Not present',mid:'Moderate',high:'Fully present'},
+ {section:'Core ratings',key:'dissociation',title:'How detached or dissociative did you feel?',desc:'Disconnected, unreal, foggy, numb, or like you were watching your life happen.',type:'rating',low:'Not at all',mid:'Moderate',high:'Intense'},
+ {section:'Core ratings',key:'memory',title:'How was your memory and recall?',desc:'How easily could you remember details, conversations, plans, and things you had just done?',type:'rating',low:'Very difficult',mid:'Mixed',high:'Clear recall'},
+ {section:'Core ratings',key:'focus',title:'How was your attention and focus?',desc:'How easily could you stay with a task, conversation, or train of thought?',type:'rating',low:'Scattered',mid:'Variable',high:'Sustained'},
+ {section:'Core ratings',key:'clarity',title:'How mentally clear did you feel?',desc:'Consider alertness, comprehension, mental sharpness, and brain fog.',type:'rating',low:'Very foggy',mid:'Moderate',high:'Very clear'},
+ {section:'Core ratings',key:'stress',title:'How stressed did you feel?',desc:'Mental pressure, anxiety, overwhelm, or tension.',type:'rating',low:'None',mid:'Moderate',high:'Extreme'},
+ {section:'Core ratings',key:'emotion',title:'What was your emotional state?',desc:'A few words are enough. No need to overthink it.',type:'text',placeholder:'Calm, anxious, flat, curious, content…'},
+ {section:'Context',key:'sleepHours',title:'How much did you sleep?',desc:'Approximate hours of sleep last night.',type:'number',placeholder:'Hours slept',max:24,step:0.25},
+ {section:'Context',key:'sleepQuality',title:'How was your sleep quality?',desc:'How rested did you feel?',type:'choice',choices:['Poor','Below average','Okay','Good','Excellent']},
+ {section:'Context',key:'caffeine',title:'How much caffeine did you have?',desc:'Include coffee, tea, energy drinks, and approximate timing.',type:'text',placeholder:'e.g. 2 coffees, last one at 2 PM'},
+ {section:'Context',key:'environment',title:'How did your environment affect you?',desc:'Consider noise, light, weather, location, routine changes, and how comfortable you felt.',type:'choice',choices:['Mostly difficult','Somewhat difficult','No clear effect','Somewhat supportive','Very supportive']},
+ {section:'Context',key:'socialQuality',title:'How did your social interactions feel?',desc:'Think about the quality of interactions, not just how many people you saw.',type:'rating',low:'Draining',mid:'Neutral / mixed',high:'Nourishing'},
+ {section:'Context',key:'connection',title:'How connected did you feel to other people?',desc:'Consider closeness, belonging, and whether you felt understood.',type:'rating',low:'Isolated',mid:'Some connection',high:'Very connected'},
+ {section:'Context',key:'conversations',title:'Did you have meaningful conversations?',desc:'Conversations where you felt engaged, understood, curious, or genuinely connected.',type:'choice',choices:['None','A little','One meaningful conversation','Several meaningful conversations']},
+ {section:'Context',key:'relationshipTone',title:'How did your relationships feel today?',desc:'Think about supportive and stressful dynamics, including interactions that stayed on your mind.',type:'choice',choices:['Mostly supportive','More supportive than stressful','Mixed','More stressful than supportive','Mostly stressful','No notable interactions']},
+ {section:'Context',key:'trigger',title:'What else may have influenced your day?',desc:'Illness, medication, routine changes, workload, conflict, inspiration, or something unexpected.',type:'textarea',placeholder:'Anything that seemed to affect your state…'},
+ {section:'Behaviors',key:'hygiene',title:'How was your personal maintenance?',desc:'Showering, brushing teeth, grooming, changing clothes, and other basic care.',type:'choice',choices:['Did not manage much','A little','Most basics','All usual basics','More than usual']},
+ {section:'Behaviors',key:'activity',title:'How physically active were you?',desc:'Walking, running, cycling, gym, stretching, or other movement.',type:'choice',choices:['None','Light','Moderate','High']},
+ {section:'Behaviors',key:'outsideTime',title:'How much time did you spend outside?',desc:'Approximate total time outdoors in daylight or fresh air.',type:'choice',choices:['None','Under 15 minutes','15–30 minutes','30–60 minutes','1–2 hours','More than 2 hours']},
+ {section:'Behaviors',key:'water',title:'Approximately how much water did you drink?',desc:'Estimate total plain water. You can use ounces or liters—just be consistent.',type:'text',placeholder:'e.g. 48 oz or 1.5 liters'},
+ {section:'Behaviors',key:'foodIntake',title:'How would you describe your food intake today?',desc:'Think about what and how much you ate across the day.',type:'choice',choices:['Very little','Less than I needed','About enough','More than enough','A lot / unusually large']},
+ {section:'Behaviors',key:'mealRegularity',title:'How regular were your meals?',desc:'Consider whether you ate at reasonably consistent times and avoided long gaps.',type:'choice',choices:['Skipped most meals','Irregular / long gaps','Somewhat regular','Mostly regular','Very regular']},
+ {section:'Behaviors',key:'nutritionQuality',title:'How nourishing was your food today?',desc:'Consider variety, fruits or vegetables, protein, and how satisfying your meals were.',type:'rating',low:'Not very nourishing',mid:'Mixed',high:'Very nourishing'},
+ {section:'Behaviors',key:'ateEnough',title:'Do you feel you ate enough today?',desc:'This is about whether your body had enough food—not whether you followed a particular diet.',type:'choice',choices:['Definitely not','Probably not','Unsure','Probably yes','Definitely yes']},
+ {section:'Behaviors',key:'selfCare',title:'How well did you look after yourself overall?',desc:'Consider rest, taking breaks, managing responsibilities, and responding to your needs.',type:'rating',low:'Not well',mid:'Somewhat',high:'Very well'},
+ {section:'Reflection',key:'notes',title:'Anything else worth noting?',desc:'Optional observations, patterns, or things you want to remember.',type:'textarea',placeholder:'What stood out today?'}
 ];
-function loadDraftForDate(d){draft={date:d,...(entries[d]||{})};}
+function loadDraftForDate(d){draft={date:d,...(entries[d]||{})}}
 function renderStep(){
  const q=questions[step];document.getElementById('step-label').textContent=`${step+1} OF ${questions.length}`;
  document.getElementById('progress-fill').style.width=`${(step+1)/questions.length*100}%`;
  let field='';
- if(q.type==='date')field=`<label class="field-label">Date</label><input id="answer" type="date" value="${draft.date||date}">`;
+ if(q.type==='date')field=`<label class="field-label" for="answer">Date</label><input id="answer" type="date" value="${escapeHTML(draft.date||date)}">`;
  if(q.type==='rating')field=`<div class="rating"><span id="rating-value">${draft[q.key]??5}</span><small> / 10</small></div><input id="answer" type="range" min="0" max="10" step="1" value="${draft[q.key]??5}"><div class="scale-labels"><span>${q.low}</span><span>${q.mid}</span><span>${q.high}</span></div>`;
- if(q.type==='number')field=`<input id="answer" type="number" min="0" max="24" step=".25" placeholder="${q.placeholder}" value="${draft[q.key]??''}">`;
- if(q.type==='text')field=`<textarea id="answer" placeholder="${q.placeholder}">${draft[q.key]??''}</textarea>`;
- if(q.type==='textarea')field=`<textarea id="answer" placeholder="${q.placeholder}">${draft[q.key]??''}</textarea>`;
- if(q.type==='choice')field=`<div class="options">${q.choices.map(v=>`<label class="option"><input type="radio" name="answer" value="${v}" ${draft[q.key]===v?'checked':''}> ${v}</label>`).join('')}</div>`;
- document.getElementById('step-content').innerHTML=`<h1>${q.title}</h1><p class="subtitle">${q.desc}</p>${field}`;
- const ans=document.getElementById('answer');
- if(ans){ans.addEventListener('input',()=>{draft[q.key]=q.type==='rating'?Number(ans.value):ans.value;if(q.type==='rating')document.getElementById('rating-value').textContent=ans.value;});}
+ if(q.type==='number')field=`<input id="answer" type="number" min="0" max="${q.max||1000}" step="${q.step||1}" placeholder="${escapeHTML(q.placeholder||'') }" value="${escapeHTML(draft[q.key]??'')}">`;
+ if(q.type==='text'||q.type==='textarea')field=`<textarea id="answer" placeholder="${escapeHTML(q.placeholder||'')}">${escapeHTML(draft[q.key]??'')}</textarea>`;
+ if(q.type==='choice')field=`<div class="options">${q.choices.map(v=>`<label class="option"><input type="radio" name="answer" value="${escapeHTML(v)}" ${draft[q.key]===v?'checked':''}> ${escapeHTML(v)}</label>`).join('')}</div>`;
+ document.getElementById('step-content').innerHTML=`<div class="step-top" style="margin-bottom:10px"><span>${escapeHTML(q.section.toUpperCase())}</span><span>${step+1} / ${questions.length}</span></div><h1>${escapeHTML(q.title)}</h1><p class="subtitle">${escapeHTML(q.desc)}</p>${field}`;
+ const ans=document.getElementById('answer');if(ans)ans.addEventListener('input',()=>{draft[q.key]=q.type==='rating'?Number(ans.value):ans.value;if(q.type==='rating')document.getElementById('rating-value').textContent=ans.value});
  document.querySelectorAll('input[name=answer]').forEach(el=>el.addEventListener('change',()=>draft[q.key]=el.value));
- document.getElementById('back').disabled=step===0;
- document.getElementById('next').textContent=step===questions.length-1?'Save check-in':'Continue';
+ document.getElementById('back').disabled=step===0;document.getElementById('next').textContent=step===questions.length-1?'Save check-in':'Continue';
 }
-function saveDraft(){if(!draft.date)draft.date=date;entries[draft.date]={...entries[draft.date],...draft,updatedAt:new Date().toISOString()};saveAll(entries);date=draft.date;}
+function saveDraft(){if(!draft.date)draft.date=date;entries[draft.date]={...entries[draft.date],...draft,updatedAt:new Date().toISOString()};saveAll(entries);date=draft.date}
 function showSummary(d){
  const e=entries[d]||draft;document.getElementById('done-date').textContent=d;
- const metrics=[['Presence',e.presence,'/10'],['Dissociation',e.dissociation,'/10'],['Sleep',e.sleepHours??'—',' hrs'],['Stress',e.stress,'/10']];
- let html=`<div class="summary-grid">${metrics.map(([n,v,u])=>`<div class="metric"><div class="name">${n}</div><div class="value">${v??'—'}<span style="font-size:13px;color:#777;font-weight:400">${u}</span></div></div>`).join('')}</div><div class="card">`;
- const lines=[['Sleep quality',e.sleepQuality],['Caffeine',e.caffeine],['Social',e.social],['Movement',e.activity],['Emotional state',e.emotion],['Influences',e.trigger],['Notes',e.notes]];
- html+=lines.filter(([k,v])=>v).map(([k,v])=>`<div style="margin:9px 0"><div class="field-label">${k}</div><div>${escapeHTML(v)}</div></div>`).join('');
- html+='</div>';document.getElementById('summary').innerHTML=html;
+ const groups=[['Core ratings',[['Presence',e.presence,'/10'],['Dissociation',e.dissociation,'/10'],['Memory',e.memory,'/10'],['Focus',e.focus,'/10'],['Mental clarity',e.clarity,'/10'],['Stress',e.stress,'/10']]],['Context',[['Sleep',e.sleepHours,' hrs'],['Sleep quality',e.sleepQuality],['Social interaction quality',e.socialQuality,'/10'],['Connection',e.connection,'/10']]],['Behaviors',[['Water',e.water],['Food intake',e.foodIntake],['Ate enough',e.ateEnough],['Self-care',e.selfCare,'/10']]]];
+ let html=groups.map(([name,items])=>`<div class="section-title">${name}</div><div class="summary-grid">${items.map(([n,v,u=''])=>`<div class="metric"><div class="name">${n}</div><div class="value" style="font-size:21px">${escapeHTML(v??'—')}<span style="font-size:12px;color:#777;font-weight:400">${u}</span></div></div>`).join('')}</div>`).join('');
+ const details=[['Emotional state',e.emotion],['Caffeine',e.caffeine],['Environment',e.environment],['Meaningful conversations',e.conversations],['Relationship tone',e.relationshipTone],['Hygiene',e.hygiene],['Movement',e.activity],['Time outside',e.outsideTime],['Meal regularity',e.mealRegularity],['Nutrition quality',e.nutritionQuality==null?'':`${e.nutritionQuality}/10`],['Other influences',e.trigger],['Notes',e.notes]];
+ html+=`<div class="card">${details.filter(([,v])=>v!==undefined&&v!=='').map(([k,v])=>`<div style="margin:9px 0"><div class="field-label">${k}</div><div>${escapeHTML(v)}</div></div>`).join('')}</div>`;document.getElementById('summary').innerHTML=html;
 }
-function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function finish(){saveDraft();document.getElementById('wizard').classList.add('hidden');document.getElementById('complete').classList.remove('hidden');showSummary(draft.date);}
-function start(d=todayISO()){date=d;loadDraftForDate(d);step=0;document.getElementById('wizard').classList.remove('hidden');document.getElementById('complete').classList.add('hidden');renderStep();}
+function escapeHTML(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function finish(){saveDraft();document.getElementById('wizard').classList.add('hidden');document.getElementById('complete').classList.remove('hidden');showSummary(draft.date)}
+function start(d=todayISO()){date=d;loadDraftForDate(d);step=0;document.getElementById('wizard').classList.remove('hidden');document.getElementById('complete').classList.add('hidden');renderStep()}
 document.getElementById('back').onclick=()=>{if(step>0){step--;renderStep()}};
-document.getElementById('next').onclick=()=>{if(step===0){const inp=document.getElementById('answer');draft.date=inp.value||todayISO();}if(step<questions.length-1){step++;renderStep()}else finish();};
+document.getElementById('next').onclick=()=>{if(step===0){const inp=document.getElementById('answer');draft.date=inp.value||todayISO()}if(step<questions.length-1){step++;renderStep()}else finish()};
 document.getElementById('skip').onclick=()=>{step=Math.min(step+1,questions.length-1);renderStep()};
-document.getElementById('edit-entry').onclick=()=>{start(date)};
-document.getElementById('new-entry').onclick=()=>start(todayISO());
-document.querySelectorAll('.nav button').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.tab));if(btn.dataset.tab==='history')renderHistory();if(btn.dataset.tab==='trends')renderTrends();});
-document.getElementById('history-date').onchange=e=>{const d=e.target.value;if(entries[d]){start(d);document.querySelector('[data-tab="checkin"]').click();}else renderHistory();};
-function renderHistory(){
- const list=document.getElementById('history-list'),days=Object.keys(entries).sort().reverse();
- if(!days.length){list.innerHTML='<div class="empty">No entries yet.<br>Your first check-in will appear here.</div>';return;}
- list.innerHTML=days.map(d=>{const e=entries[d];return `<article class="entry"><div class="entry-head"><div class="entry-date">${d}</div><div class="entry-actions"><button class="small-btn" onclick="start('${d}');document.querySelector('[data-tab=checkin]').click()">Edit</button><button class="small-btn" onclick="deleteEntry('${d}')">Delete</button></div></div><div class="entry-mini">Presence <b>${e.presence??'—'}</b> · Dissociation <b>${e.dissociation??'—'}</b> · Stress <b>${e.stress??'—'}</b></div>${e.emotion?`<div style="margin-top:7px;font-size:14px">${escapeHTML(e.emotion)}</div>`:''}</article>`}).join('');
-}
-window.deleteEntry=d=>{if(confirm(`Delete check-in for ${d}?`)){delete entries[d];saveAll(entries);renderHistory();}};
+document.getElementById('edit-entry').onclick=()=>start(date);document.getElementById('new-entry').onclick=()=>start(todayISO());
+document.querySelectorAll('.nav button').forEach(btn=>btn.onclick=()=>{document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b===btn));document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===btn.dataset.tab));if(btn.dataset.tab==='history')renderHistory();if(btn.dataset.tab==='trends')renderTrends()});
+document.getElementById('history-date').onchange=e=>{const d=e.target.value;if(entries[d]){start(d);document.querySelector('[data-tab="checkin"]').click()}else renderHistory()};
+function renderHistory(){const list=document.getElementById('history-list'),days=Object.keys(entries).sort().reverse();if(!days.length){list.innerHTML='<div class="empty">No entries yet.<br>Your first check-in will appear here.</div>';return}list.innerHTML=days.map(d=>{const e=entries[d];return `<article class="entry"><div class="entry-head"><div class="entry-date">${escapeHTML(d)}</div><div class="entry-actions"><button class="small-btn" onclick="start('${d}');document.querySelector('[data-tab=checkin]').click()">Edit</button><button class="small-btn" onclick="deleteEntry('${d}')">Delete</button></div></div><div class="entry-mini">Presence <b>${e.presence??'—'}</b> · Dissociation <b>${e.dissociation??'—'}</b> · Focus <b>${e.focus??'—'}</b> · Stress <b>${e.stress??'—'}</b></div>${e.emotion?`<div style="margin-top:7px;font-size:14px">${escapeHTML(e.emotion)}</div>`:''}</article>`}).join('')}
+window.deleteEntry=d=>{if(confirm(`Delete check-in for ${d}?`)){delete entries[d];saveAll(entries);renderHistory()}};
 function renderTrends(){
  const days=Object.keys(entries).sort().slice(-14),svg=document.getElementById('trend-chart');
- if(days.length<2){svg.innerHTML=`<text x="160" y="92" text-anchor="middle" fill="#888" font-size="13">Log at least two days to see a trend.</text>`;}
- else{
- const vals=days.map(d=>entries[d]),x=i=>25+i*(270/(days.length-1)),y=v=>160-(Number(v||0)*13.5);
- const poly=(key)=>vals.map((v,i)=>`${x(i)},${y(v[key]??0)}`).join(' ');
- svg.innerHTML=`<line x1="25" y1="25" x2="295" y2="25" stroke="#eee"/><line x1="25" y1="92" x2="295" y2="92" stroke="#eee"/><line x1="25" y1="160" x2="295" y2="160" stroke="#eee"/><text x="4" y="29" font-size="10" fill="#999">10</text><text x="9" y="96" font-size="10" fill="#999">5</text><text x="12" y="164" font-size="10" fill="#999">0</text><polyline fill="none" stroke="#222" stroke-width="2.5" points="${poly('presence')}"/><polyline fill="none" stroke="#aaa" stroke-width="2.5" points="${poly('dissociation')}"/>`;}
- const avg=k=>{const a=days.map(d=>Number(entries[d][k])).filter(n=>!Number.isNaN(n));return a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):'—'};
- document.getElementById('trend-stats').innerHTML=`<div class="metric"><div class="name">Average presence</div><div class="value">${avg('presence')}<span style="font-size:13px;color:#777">/10</span></div></div><div class="metric"><div class="name">Average dissociation</div><div class="value">${avg('dissociation')}<span style="font-size:13px;color:#777">/10</span></div></div>`;
- const contextKeys=[['Sleep quality',['Poor','Okay','Good','Excellent']],['Social',['None','Minimal','Some','Meaningful','A lot']],['Activity',['None','Light','Moderate','Intense']]];
- document.getElementById('context-patterns').innerHTML=contextKeys.map(([label,choices])=>{const rows=choices.map(c=>{const matching=days.map(d=>entries[d]).filter(e=>e[label==='Sleep quality'?'sleepQuality':label==='Social'?'social':'activity']===c);const diss=matching.map(e=>Number(e.dissociation)).filter(n=>!isNaN(n));return `${c}: ${diss.length?`avg dissociation ${ (diss.reduce((a,b)=>a+b,0)/diss.length).toFixed(1)}/10 (${diss.length} days)`:'no data'}`;return `<div style="font-size:14px;padding:7px 0;border-bottom:1px solid #eee">${rowsafe(c)} <span style="color:#777">— ${rowsafe(diss)}</span></div>`}).join('');return `<div class="card"><b>${label}</b>${rows}</div>`}).join('');
+ if(days.length<2)svg.innerHTML='<text x="160" y="92" text-anchor="middle" fill="#888" font-size="13">Log at least two days to see a trend.</text>';
+ else{const vals=days.map(d=>entries[d]),x=i=>25+i*(270/(days.length-1)),y=v=>160-(Number(v||0)*13.5),poly=key=>vals.map((v,i)=>`${x(i)},${y(v[key]??0)}`).join(' ');svg.innerHTML=`<line x1="25" y1="25" x2="295" y2="25" stroke="#eee"/><line x1="25" y1="92" x2="295" y2="92" stroke="#eee"/><line x1="25" y1="160" x2="295" y2="160" stroke="#eee"/><text x="4" y="29" font-size="10" fill="#999">10</text><text x="9" y="96" font-size="10" fill="#999">5</text><text x="12" y="164" font-size="10" fill="#999">0</text><polyline fill="none" stroke="#222" stroke-width="2.5" points="${poly('presence')}"/><polyline fill="none" stroke="#aaa" stroke-width="2.5" points="${poly('dissociation')}"/>`}
+ const avg=k=>{const a=days.map(d=>entries[d][k]).filter(n=>n!==undefined&&n!==''&&Number.isFinite(Number(n))).map(Number);return a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):'—'};
+ document.getElementById('trend-stats').innerHTML=[['Average presence','presence'],['Average dissociation','dissociation'],['Average focus','focus'],['Average memory','memory'],['Average clarity','clarity']].map(([n,k])=>`<div class="metric"><div class="name">${n}</div><div class="value">${avg(k)}<span style="font-size:13px;color:#777">/10</span></div></div>`).join('');
+ const groups=[['Sleep quality','sleepQuality',['Poor','Below average','Okay','Good','Excellent']],['Social interaction quality','socialQuality',null],['Relationship tone','relationshipTone',null],['Environment','environment',null],['Physical activity','activity',null],['Meal regularity','mealRegularity',null],['Ate enough','ateEnough',null]];
+ document.getElementById('context-patterns').innerHTML=groups.map(([label,key,choices])=>{const values=choices||[...new Set(days.map(d=>entries[d][key]).filter(Boolean))];if(!values.length)return '';const rows=values.map(v=>{const matching=days.map(d=>entries[d]).filter(e=>e[key]===v),p=matching.map(e=>Number(e.presence)).filter(Number.isFinite),dis=matching.map(e=>Number(e.dissociation)).filter(Number.isFinite),focus=matching.map(e=>Number(e.focus)).filter(Number.isFinite),mean=a=>a.length?(a.reduce((x,y)=>x+y,0)/a.length).toFixed(1):'—';return `<div style="font-size:13px;padding:8px 0;border-bottom:1px solid #eee"><b>${escapeHTML(v)}</b><div style="color:#777">${matching.length} day(s) · presence ${mean(p)}/10 · dissociation ${mean(dis)}/10 · focus ${mean(focus)}/10</div></div>`}).join('');return `<div class="card"><b>${label}</b>${rows}</div>`}).join('')||'<p class="note">Add more check-ins to begin seeing context patterns.</p>';
 }
-function rowsafe(s){return escapeHTML(s)}
-function csvExport(){
- const fields=['date','presence','dissociation','sleepHours','sleepQuality','stress','caffeine','social','activity','emotion','trigger','notes'];
- const csv=[fields.join(','),...Object.keys(entries).sort().map(d=>fields.map(k=>`"${String(entries[d][k]??'').replaceAll('"','""')}"`).join(','))].join('\n');
- download('presence-checkins.csv','text/csv',csv);
-}
-function download(name,type,content){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-document.getElementById('export-csv').onclick=csvExport;
-document.getElementById('export-json').onclick=()=>download('presence-backup.json','application/json',JSON.stringify(entries,null,2));
-document.getElementById('import-json').onclick=()=>document.getElementById('json-file').click();
-document.getElementById('json-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const parsed=JSON.parse(await f.text());if(!parsed||typeof parsed!=='object')throw 0;entries={...entries,...parsed};saveAll(entries);renderHistory();alert('Backup restored.');}catch{alert('Could not read that backup file.');}e.target.value='';};
-start(todayISO());
-if('serviceWorker' in navigator && location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+function csvExport(){const fields=[...new Set(['date',...questions.map(q=>q.key).filter(k=>k!=='date'),'updatedAt'])];const csv=[fields.join(','),...Object.keys(entries).sort().map(d=>fields.map(k=>`"${String(entries[d][k]??'').replaceAll('"','""')}"`).join(','))].join('\n');download('presence-checkins.csv','text/csv;charset=utf-8',csv)}
+function download(name,type,content){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+document.getElementById('export-csv').onclick=csvExport;document.getElementById('export-json').onclick=()=>download('presence-backup.json','application/json',JSON.stringify(entries,null,2));document.getElementById('import-json').onclick=()=>document.getElementById('json-file').click();
+document.getElementById('json-file').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const parsed=JSON.parse(await f.text());if(!parsed||typeof parsed!=='object'||Array.isArray(parsed))throw 0;entries={...entries,...parsed};saveAll(entries);renderHistory();alert('Backup restored.')}catch{alert('Could not read that backup file.')}e.target.value=''};
+start(todayISO());if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
